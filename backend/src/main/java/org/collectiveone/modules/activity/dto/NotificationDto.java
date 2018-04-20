@@ -5,11 +5,15 @@ import org.collectiveone.modules.users.AppUserDto;
 public class NotificationDto {
 
 	private String id;
-	private AppUserDto subscriberUser;
-	private String subscriberState;
-	private ActivityDto activity;
+	private AppUserDto subscriber;
+	private AppUserDto triggerUser;
+	private Long creationDate;
 	private String state;
-	private PushInfoDto pushInfo;
+	private String emailState;
+	private String pushState;
+	private String messsage;
+	private String url;
+	private Boolean isHtml;
 	
 	public String getId() {
 		return id;
@@ -17,23 +21,17 @@ public class NotificationDto {
 	public void setId(String id) {
 		this.id = id;
 	}
-	public AppUserDto getSubscriberUser() {
-		return subscriberUser;
+	public AppUserDto getTriggerUser() {
+		return triggerUser;
 	}
-	public void setSubscriberUser(AppUserDto subscriberUserDto) {
-		this.subscriberUser = subscriberUserDto;
+	public void setTriggerUser(AppUserDto triggerUser) {
+		this.triggerUser = triggerUser;
 	}
-	public String getSubscriberState() {
-		return subscriberState;
+	public Long getCreationDate() {
+		return creationDate;
 	}
-	public void setSubscriberState(String subscriberState) {
-		this.subscriberState = subscriberState;
-	}
-	public ActivityDto getActivity() {
-		return activity;
-	}
-	public void setActivity(ActivityDto activityDto) {
-		this.activity = activityDto;
+	public void setCreationDate(Long creationDate) {
+		this.creationDate = creationDate;
 	}
 	public String getState() {
 		return state;
@@ -41,11 +39,41 @@ public class NotificationDto {
 	public void setState(String state) {
 		this.state = state;
 	}
-	public void setPushInfo(PushInfoDto pushInfo) {
-		this.pushInfo = pushInfo;
+	public String getEmailState() {
+		return emailState;
 	}
-	public PushInfoDto getPushInfo() {
-		return pushInfo;
+	public void setEmailState(String emailState) {
+		this.emailState = emailState;
+	}
+	public String getPushState() {
+		return pushState;
+	}
+	public void setPushState(String pushState) {
+		this.pushState = pushState;
+	}
+	public String getMesssage() {
+		return messsage;
+	}
+	public void setMesssage(String messsage) {
+		this.messsage = messsage;
+	}
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	public Boolean getIsHtml() {
+		return isHtml;
+	}
+	public void setIsHtml(Boolean isHtml) {
+		this.isHtml = isHtml;
+	}
+	public AppUserDto getSubscriber() {
+		return subscriber;
+	}
+	public void setSubscriber(AppUserDto subscriber) {
+		this.subscriber = subscriber;
 	}
 	
 }

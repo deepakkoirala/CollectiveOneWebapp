@@ -34,13 +34,14 @@ public class ActivityController extends BaseController {
 	@RequestMapping(path = "/user/notifications", method = RequestMethod.GET)
 	public GetResult<List<NotificationDto>> getNotifications(
 			@RequestParam("page") Integer page,
-			@RequestParam("size") Integer size) {
+			@RequestParam("size") Integer size,
+			@RequestParam(name="htmlFlag", defaultValue="true") Boolean htmlFlag) {
 		
 		if (getLoggedUser() == null) {
 			return new GetResult<List<NotificationDto>>("error", "endpoint enabled users only", null);
 		}
 		
-		return activityService.getUserNotifications(getLoggedUserId(), new PageRequest(page, size));
+		return activityService.getUserNotifications(getLoggedUserId(), htmlFlag, new PageRequest(page, size));
 	}
 	
 	@RequestMapping(path = "/user/notifications/read", method = RequestMethod.PUT)

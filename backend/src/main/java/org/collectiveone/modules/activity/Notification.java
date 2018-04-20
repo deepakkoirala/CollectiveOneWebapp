@@ -12,13 +12,11 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.collectiveone.modules.activity.dto.NotificationDto;
 import org.collectiveone.modules.activity.enums.NotificationEmailState;
 import org.collectiveone.modules.activity.enums.NotificationPushState;
 import org.collectiveone.modules.activity.enums.NotificationState;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
 @Table( name = "notifications" )
@@ -51,17 +49,7 @@ public class Notification {
 	@Column(name = "push_state")
 	private NotificationPushState pushState;
 	
-	public NotificationDto toDto() {
-		NotificationDto dto = new NotificationDto();
-		
-		dto.setId(id.toString());
-		dto.setActivity(activity.toDto());
-		dto.setState(state.toString());
-		dto.setSubscriberUser(subscriber.getUser().toDtoLight());
-		dto.setSubscriberState(subscriber.getState().toString());
-		
-		return dto;
-	}
+	/* notification conversion toDto is complex and done in PushMessageBuild */
 	
 	public UUID getId() {
 		return id;

@@ -124,17 +124,13 @@ public class ActivityService {
 	}
 	
 	@Transactional
-	public GetResult<List<NotificationDto>> getUserNotifications(UUID userId, PageRequest page) {
+	public GetResult<List<NotificationDto>> getUserNotifications(UUID userId, Boolean htmlFlag, PageRequest page) {
 		
 		List<NotificationDto> notifications = new ArrayList<NotificationDto>();
 		NotificationDto notificationResult;
 		PushInfoDto pushInfo;
 		for(Notification notification : notificationRepository.findOfUser(userId, page)) {
-
-			notificationResult = notification.toDto();
-			pushInfo = pushMessageBuilder.getPushMessage(notification);
-			notificationResult.setPushInfo(pushInfo);			
-			notifications.add(notificationResult);
+			notifications.add(pushMessageBuilder.getNotificationDto(notification, htmlFlag));
 		}
 		
 		return new GetResult<List<NotificationDto>>("success", "notifications found", notifications);

@@ -1,30 +1,11 @@
 package org.collectiveone.modules.activity;
 
-import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import org.collectiveone.modules.activity.dto.PushInfoDto;
-import org.collectiveone.modules.activity.dto.SubscriberDto;
-import org.collectiveone.modules.activity.enums.ActivityType;
-import org.collectiveone.modules.activity.enums.NotificationEmailState;
-import org.collectiveone.modules.activity.enums.NotificationPushState;
-import org.collectiveone.modules.activity.repositories.NotificationRepositoryIf;
-import org.collectiveone.modules.activity.repositories.WantToContributeRepositoryIf;
+import org.collectiveone.modules.activity.dto.NotificationDto;
 import org.collectiveone.modules.assignations.Assignation;
-import org.collectiveone.modules.assignations.Evaluator;
-import org.collectiveone.modules.assignations.Receiver;
 import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.model.ModelCardWrapper;
 import org.collectiveone.modules.model.ModelSection;
@@ -32,54 +13,17 @@ import org.collectiveone.modules.model.ModelView;
 import org.collectiveone.modules.tokens.InitiativeTransfer;
 import org.collectiveone.modules.tokens.TokenMint;
 import org.collectiveone.modules.tokens.TokenType;
-import org.collectiveone.modules.users.AppUser;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-
-import com.sendgrid.Email;
-import com.sendgrid.Mail;
-import com.sendgrid.Method;
-import com.sendgrid.Personalization;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
 
 @Service
 public class PushMessageBuilder {
 	
 	@Autowired
-	private NotificationRepositoryIf notificationRepository;
-	
-	@Autowired
-	private WantToContributeRepositoryIf wantToContributeRepository;
-	
-	@Autowired
-	private SendGrid sg;
-	
-	@Autowired
 	protected Environment env;
-
-	List<List<Notification>> segmentedPerActivityNotifications = new ArrayList<List<Notification>>();
-	List<List<Notification>> segmentedPerUserNotifications = new ArrayList<List<Notification>>();
-	List<List<Notification>> segmentedPerUserAndInitiativeNotifications = new ArrayList<List<Notification>>();
-
-	private String triggeredUsername;
-	private String triggeredUserPicture;
-	private NotificationPushState notificationPushState;
 	
-	public PushInfoDto getPushMessage(Notification notification) {
-		triggeredUsername = notification.getActivity().getTriggerUser().getProfile().getNickname();
-		triggeredUserPicture = notification.getActivity().getTriggerUser().getProfile().getPictureUrl();
-
-		if(notification.getPushState() != null)
-			notificationPushState = notification.getPushState();
-		
-		return getActivityMessage(notification);
-	}
-
-	private PushInfoDto getActivityMessage(Notification notification) {
+	public NotificationDto getNotificationDto(Notification notification, Boolean htmlFlag) {
 		
 		Activity act = notification.getActivity();
 		
@@ -108,365 +52,63 @@ public class PushMessageBuilder {
 		switch (notification.getActivity().getType()) {
 			
 		case INITIATIVE_CREATED:
-			message = "created a new initiative " + getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					initiative.getId().toString() + "/overview" ;
-			return bindData(message,url);
+			message = getPTag(htmlFlag) + "created the " + getInitiativeAnchor(initiative, htmlFlag) + " initiative and added you as a member." + getPTagEnd(htmlFlag);
+			
+			url = getInitiativeAnchor(initiative, htmlFlag);
+			
+			/* you can add this after the switch instead o creating multiple repeated calls */
+			break;
 
-		case INITIATIVE_EDITED:
-			message = "edited the " + getInitiativeAnchor(initiative) + " initiative.";
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					initiative.getId().toString() + "/overview" ;
-			return bindData(message,url);
-		
-		case INITIATIVE_DELETED:
-			message = "deleted the initiative " + getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					initiative.getId().toString() + "/overview" ;
-			return bindData(message,url);
-				
-		case SUBINITIATIVE_CREATED:
-			message = "created " + getInitiativeAnchor(subInitiative) + " sub-initiative under " +  getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					subInitiative.getId().toString() + "/overview" ;
-			return bindData(message,url);
-
-		case TOKENS_MINTED: 
-			message = "minted " + mint.getValue() + " " + mint.getToken().getName() + " in " +  getInitiativeAnchor(initiative);
-			return bindData(message,url);
-			
-		case TOKEN_CREATED:
-			message = "created a new token type called " + tokenType.getName() + " in " + getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					initiative.getId().toString() + "/overview" ;
-			return bindData(message,url);
-			
-		case PR_ASSIGNATION_CREATED:
-			Evaluator evaluator = null;
-			
-			/* check if this member is an evaluator */
-			for (Evaluator thisEvaluator : assignation.getEvaluators()) {
-				if (thisEvaluator.getUser().getC1Id() == notification.getSubscriber().getUser().getC1Id()) {
-					evaluator = thisEvaluator;
-				}
-			}
-						String receiversList = "";
-			for (int ix = 0; ix < assignation.getReceivers().size(); ix++) {
-				
-				/* first element starts the string */
-				if (ix == 0) {
-					receiversList += "";	
-				}
-			
-				/* next elements add a comma or 'and' and a space */
-				if (ix > 0) {
-					if  (ix == assignation.getReceivers().size() - 1) {
-						receiversList += " and ";
-					} else {
-						receiversList += ", ";
-					}
-				}
-				if (assignation.getReceivers().get(ix).getUser().getC1Id() == notification.getSubscriber().getUser().getC1Id()) {
-					receiversList += "you";
-				} else {
-					receiversList += assignation.getReceivers().get(ix).getUser().getProfile().getNickname();
-				}
-			}
-			message = "created a new peer-reviewed " + getAssignationAnchor(assignation) + " of " + 
-					assignation.getBills().get(0).getValue() + " " + " from " + getInitiativeAnchor(initiative); 
-			
-			if (evaluator != null) {
-				Date closeDate = assignation.getConfig().getMaxClosureDate();
-				SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, ''yy");
-				message += "You are one of the evaluators of this transfer! Please visit the " + 
-						getAssignationAnchor(assignation) + " page to make your evaluation." + 
-						"You have until " + dateFormat.format(closeDate) + " at this time of the day to do it.";
-			}
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-		
-		case PR_ASSIGNATION_DONE: 
-			message = "Peer-reviewed " + getAssignationAnchor(assignation) + " has been done."
-				+ "" + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() +
-				" have been transferred to its receivers.";
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-			
-		case D_ASSIGNATION_CREATED:
-			message = "made a direct " + getAssignationAnchor(assignation) + " of " + 
-				assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + " from " + getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-			
-		case INITIATIVE_TRANSFER:
-			message = "made a transfer of " + 
-					transfer.getValue() + " " + transfer.getTokenType().getName() +
-					" to " + getInitiativeAnchor(transfer.getTo());
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					initiative.getId().toString() + "/overview";
-			return bindData(message,url);
-
-		case ASSIGNATION_REVERT_ORDERED: 
-			message = "wants to revert the " + getAssignationAnchor(assignation) + 
-				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + " from " + getInitiativeAnchor(initiative);
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-
-			
-		case ASSIGNATION_REVERT_CANCELLED: 
-			message = "ordered a revert of the " + getAssignationAnchor(assignation) + 
-				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() +  ", but the revert has been cancelled. ";
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-		
-		case ASSIGNATION_REVERTED: 
-			message = "ordered a revert of the " + getAssignationAnchor(assignation) + 
-				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + ", and the revert has been accepted. ";
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-		
-		case ASSIGNATION_DELETED: 
-			message = "deleted the ongoing transfer. " + getAssignationAnchor(assignation) + 
-				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName();
-			url = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-					assignation.getInitiative().getId().toString() + "/assignations/" + assignation.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_VIEW_CREATED:
-			message = "created the view " + getModelViewAnchor(modelView) + " ";
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelView.getInitiative().getId().toString() + "/model/view/" + 
-					modelView.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_VIEW_EDITED:
-			message = "edited the view " + getModelViewAnchor(modelView);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelView.getInitiative().getId().toString() + "/model/view/" + 
-					modelView.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_VIEW_DELETED:
-			message = "deleted the view " + getModelViewAnchor(modelView);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelView.getInitiative().getId().toString() + "/model/view/" + 
-					modelView.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_SECTION_CREATED:
-			if (onSection != null) {
-				message = "created the subsection " + getModelSectionAnchor(modelSection) + 
-						" under section " + getModelSectionAnchor(onSection) + " ";
-			} else {
-				message = "created the section " + getModelSectionAnchor(modelSection) + 
-						" under the " + getModelViewAnchor(onView) + " view ";
-			}
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();				
-			return bindData(message,url);
-			
-		case MODEL_SECTION_EDITED:
-			message = "edited the model section " + getModelSectionAnchor(modelSection) + " ";
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_SECTION_DELETED:
-			message = "deleted the model section " + getModelSectionAnchor(modelSection) + " ";
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_CREATED:
-			message = "created the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
-					" on section " + getModelSectionAnchor(onSection);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/section/" + 
-					onSection.getId().toString() + "/card/" + modelCardWrapper.getCard().getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_EDITED:
-			message = "edited the card " + getModelCardWrapperAnchor(modelCardWrapper) + " ";
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/card/" + 
-					modelCardWrapper.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_DELETED:
-			message = "deleted the card " + getModelCardWrapperAnchor(modelCardWrapper) + " ";
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/card/" + 
-					modelCardWrapper.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_SECTION_ADDED: 
-			if (onSection != null) {
-				message = "added the section " + getModelSectionAnchor(modelSection) + 
-						" as sub-section of " + getModelSectionAnchor(onSection) + " ";
-			} else {
-				message = "added the section " + getModelSectionAnchor(modelSection) + 
-						" under the " + getModelViewAnchor(onView) + " view ";
-			}
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();					
-			return bindData(message,url);
-			
-		case MODEL_SECTION_MOVED:
-			if (onSection != null) {
-				if (fromSection != null) {
-					message = "moved the section " + getModelSectionAnchor(modelSection) + 
-							" from " + getModelSectionAnchor(fromSection) + 
-							" to " + getModelSectionAnchor(onSection) + " ";
-				} else {
-					message = "moved the section " + getModelSectionAnchor(modelSection) + 
-							" from " + getModelViewAnchor(fromView) + 
-							" to " + getModelSectionAnchor(onSection) + " ";
-				}
-				
-			} else {
-				if (fromSection != null) {
-					message = "moved the section " + getModelSectionAnchor(modelSection) + 
-							" from " + getModelSectionAnchor(fromSection) + 
-							" to " + getModelViewAnchor(onView);
-				} else {
-					message = "moved the section " + getModelSectionAnchor(modelSection) + 
-							" from " + getModelViewAnchor(fromView) + 
-							" to " + getModelViewAnchor(onView);
-				}
-			}
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();		
-			return bindData(message,url);
-			
-		case MODEL_SECTION_REMOVED:
-			if (fromSection != null) {
-				message = "removed the section " + getModelSectionAnchor(modelSection) + 
-						" from " + getModelSectionAnchor(fromSection);
-			} else {
-				message = "removed the section " + getModelSectionAnchor(modelSection) + 
-						" from " + getModelSectionAnchor(fromSection);
-			}
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelSection.getInitiative().getId().toString() + "/model/section/" + 
-					modelSection.getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_ADDED:
-			message = "added the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
-					" under " + getModelSectionAnchor(onSection);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/section/" + 
-					onSection.getId().toString() + "/card/" + modelCardWrapper.getCard().getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_MOVED:
-			message = "moved the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
-					" from " + getModelSectionAnchor(fromSection) + 
-					" to " + getModelSectionAnchor(onSection);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/section/" + 
-					onSection.getId().toString() + "/card/" + modelCardWrapper.getCard().getId().toString();
-			return bindData(message,url);
-			
-		case MODEL_CARDWRAPPER_REMOVED:
-			message = "removed the card " + getModelCardWrapperAnchor(modelCardWrapper, fromSection) + 
-					" from " + getModelSectionAnchor(fromSection);
-			url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelCardWrapper.getInitiative().getId().toString() + "/model/section/" + 
-					onSection.getId().toString() + "/card/" + modelCardWrapper.getCard().getId().toString();
-			return bindData(message,url);
-		case MESSAGE_POSTED:
-			String from = "CollectiveOne";
-			if(notification.getActivity().getModelCardWrapper() != null) {
-				from = getModelCardWrapperAnchor(modelCardWrapper) + " card";
-				url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-						modelCardWrapper.getInitiative().getId().toString() + "/model/card/" + 
-						modelCardWrapper.getId().toString();
-			}else if(notification.getActivity().getModelSection() != null) {
-				from = getModelSectionAnchor(modelSection) + " section";
-				url = env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-						modelSection.getInitiative().getId().toString() + "/model/section/" + 
-						modelSection.getId().toString();
-			}else if(notification.getActivity().getModelView() != null) {
-				from = getModelViewAnchor(modelView) + " view";
-				url =  env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-						modelView.getInitiative().getId().toString() + "/model/view/" + 
-						modelView.getId().toString();
-			}else if(notification.getActivity().getInitiative() != null) {
-				from = getInitiativeAnchor(initiative) + " initiative";
-				url =  env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-						initiative.getId().toString() + "/overview";
-			}
-			message = "commented in " + from;
-			return bindData(message,url);
-		case MODEL_VIEW_MOVED:
-			message = "moved the view " + getModelViewAnchor(modelView) + " view";
-			url =  env.getProperty("collectiveone.webapp.baseurl") + "/#/app/inits/" + 
-					modelView.getInitiative().getId().toString() + "/model/view/" + 
-					modelView.getId().toString();
-			return bindData(message,url);
 		default:
 			message = "You have received a notification";
 			url = "http://www.collectiveone.org";
 			break;
 		
 		}
-
-		return bindData(message,url);
+		
+		
+		NotificationDto notificationDto = new NotificationDto();
+		
+		notificationDto.setSubscriber(notification.getSubscriber().getUser().toDtoLight());
+		notificationDto.setTriggerUser(act.getTriggerUser().toDtoLight());
+		notificationDto.setState(notification.getState().toString());
+		notificationDto.setEmailState(notification.getEmailState().toString());
+		notificationDto.setPushState(notification.getPushState().toString());
+		
+		notificationDto.setMesssage(message);
+		notificationDto.setUrl(url);
+		notificationDto.setIsHtml(htmlFlag);
+		
+		return notificationDto;
 	}
-	private PushInfoDto bindData(String message, String url) {
-		
-		PushInfoDto pushInfo = new PushInfoDto();
-		
-		pushInfo.setState(this.notificationPushState);
-		pushInfo.setIcon(this.triggeredUserPicture);
-		pushInfo.setMessage(this.triggeredUsername + " " + message);
-		pushInfo.setUrl(url);
-		
-		return pushInfo;
-	}
 
-//	private Personalization basicInitiativePersonalization(Notification notification) {
-//		String toEmailString = notification.getSubscriber().getUser().getEmail();
-//		String triggeredByUsername = notification.getActivity().getTriggerUser().getProfile().getNickname();
-//		String triggerUserPictureUrl = notification.getActivity().getTriggerUser().getProfile().getPictureUrl();
-//		Initiative initiative = notification.getActivity().getInitiative();
-//		
-//		Personalization personalization = new Personalization();
-//		
-//		Email toEmail = new Email();
-//		toEmail.setEmail(toEmailString);
-//		
-//		personalization.addTo(toEmail);
-//		personalization.addSubstitution("$INITIATIVE_NAME$", initiative.getMeta().getName());
-//		personalization.addSubstitution("$TRIGGER_USER_NICKNAME$", triggeredByUsername);
-//		personalization.addSubstitution("$TRIGGER_USER_PICTURE$", triggerUserPictureUrl);
-//		personalization.addSubstitution("$INITIATIVE_ANCHOR$", getInitiativeAnchor(initiative));
-//		personalization.addSubstitution("$INITIATIVE_PICTURE$", "http://guillaumeladvie.com/wp-content/uploads/2014/04/ouishare.jpg");
-////		
-////		personalization.addSubstitution("$UNSUSCRIBE_FROM_INITIATIVE_HREF$", getUnsuscribeFromInitiativeHref(initiative));
-////		personalization.addSubstitution("$UNSUSCRIBE_FROM_ALL_HREF$", getUnsuscribeFromAllHref());
-////		
-//		return personalization;
-//	}
-//	
+	private String getPTag(Boolean flag) {
+	  return flag ? "<p>" : "";
+	}
+	
+	private String getPTagEnd(Boolean flag) {
+		  return flag ? "</p>" : "";
+		}
+	
 	private String getTriggeredUser(Notification notification) {
 		return notification.getActivity().getTriggerUser().getProfile().getNickname();
 	}
 	
-	private String getInitiativeAnchor(Initiative initiative) {
-		return initiative.getMeta().getName();
+	private String getInitiativeAnchor(Initiative initiative, Boolean htmlFlag) {
+		String string = "";
+		
+		if (htmlFlag) {
+			string += "<a href=" + env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
+					initiative.getId().toString() + "/overview>";	
+		}
+		
+		string += initiative.getMeta().getName();
+		
+		if (htmlFlag) {
+			string += "</a>";
+		}
+		
+		return string;
 	}
 	
 	private String getAssignationAnchor(Assignation assignation) {
