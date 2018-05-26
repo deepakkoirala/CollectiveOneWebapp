@@ -220,7 +220,7 @@ export default {
       let mention = mentions[this.lastMentionIx]
 
       /* remove mention */
-      this.text = spliceString(this.text, mention.index + 1, mention[0].length - 1, user.nickname)
+      this.text = spliceString(this.text, mention.index + 1, mention[0].length - 1, '<b>user.nickname</b>')
       this.$refs.mdArea.focus()
       this.$refs.mdArea.selectionStart = mention.index + user.nickname.length
 
@@ -301,6 +301,10 @@ export default {
 
 .this-textarea, .this-markdown {
   min-height: 68px;
+}
+
+.this-markdown {
+  padding-left: 10px;
 }
 
 .buttons-column {

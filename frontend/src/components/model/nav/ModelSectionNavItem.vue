@@ -22,9 +22,9 @@
           <i class="fa fa-circle" aria-hidden="true"></i>
         </div>
       </div>
-      <div @click="sectionSelected()" @dblclick="toggleSubsections()" class="title-div cursor-pointer noselect">
+      <router-link :to="{name:'ModelSectionContent', params: {sectionId: section.id}}" @click="sectionSelected()" @dblclick="toggleSubsections()" class="title-div cursor-pointer noselect">
         {{ sectionTitle }}
-      </div>
+      </router-link>
       <div v-if="section" class="notification-div">
         <app-notifications-list
           :element="section"
