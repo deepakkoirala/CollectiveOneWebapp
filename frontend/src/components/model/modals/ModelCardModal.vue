@@ -576,7 +576,10 @@ export default {
 
           this.sendingData = true
           this.axios.put('/1/model/cardWrapper/' + this.cardWrapper.id, cardDto)
-            .then(responseF).catch((error) => {
+            .then((responseF) => {
+              this.closeThis()
+              this.$store.commit('triggerUpdateSectionCards')
+            }).catch((error) => {
               console.log(error)
             })
         }
@@ -756,7 +759,7 @@ export default {
 }
 
 .image-display img {
-  zoom: 2;  //increase if you have very small images
+  zoom: 2;  
   display: block;
   margin: auto;
   height: auto;

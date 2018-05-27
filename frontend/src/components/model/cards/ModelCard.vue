@@ -87,6 +87,7 @@ export default {
         this.cardWrapper = response.data.data
       })
     },
+
     dragStart (event) {
       var moveCardData = {
         type: 'MOVE_CARD',
@@ -105,8 +106,18 @@ export default {
     }
   },
 
+  watch: {
+    '$store.state.support.triggerUpdateSectionCards' () {
+      this.update()
+    }
+  },
+
   created () {
     this.cardWrapper = this.cardWrapperInit
+  },
+
+  mounted () {
+    this.$on('updateCards', this.refreshCards)
   }
 }
 </script>
