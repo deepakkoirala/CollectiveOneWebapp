@@ -31,9 +31,6 @@ import org.collectiveone.modules.assignations.repositories.BillRepositoryIf;
 import org.collectiveone.modules.assignations.repositories.EvaluationGradeRepositoryIf;
 import org.collectiveone.modules.assignations.repositories.EvaluatorRepositoryIf;
 import org.collectiveone.modules.assignations.repositories.ReceiverRepositoryIf;
-import org.collectiveone.modules.initiatives.Initiative;
-import org.collectiveone.modules.initiatives.InitiativeService;
-import org.collectiveone.modules.initiatives.repositories.InitiativeRepositoryIf;
 import org.collectiveone.modules.tokens.MemberTransfer;
 import org.collectiveone.modules.tokens.TokenService;
 import org.collectiveone.modules.tokens.TokenTransferService;
@@ -57,17 +54,11 @@ public class AssignationService {
 	private TokenService tokenService;
 	
 	@Autowired
-	private InitiativeService initiativeService;
-	
-	@Autowired
 	private TokenTransferService tokenTransferService;
 	
 	
 	@Autowired
 	private AppUserRepositoryIf appUserRepository;
-	
-	@Autowired
-	private InitiativeRepositoryIf initiativeRepository;
 	
 	@Autowired
 	private AssignationRepositoryIf assignationRepository;
@@ -92,7 +83,6 @@ public class AssignationService {
 	
 	
 	public PostResult createAssignation(UUID initiativeId, AssignationDto assignationDto, UUID creatorId) {
-		Initiative initiative = initiativeRepository.findById(initiativeId);
 	
 		Assignation assignation = new Assignation();
 		
@@ -102,9 +92,6 @@ public class AssignationService {
 		assignation.setCreator(appUserRepository.findByC1Id(creatorId));
 		assignation.setCreationDate(new Timestamp(System.currentTimeMillis()));
 		assignation.setState(AssignationState.valueOf(assignationDto.getConfig().getStartState()));
-		
-		assignation.setInitiative(initiative);
-		assignation.getAlsoInInitiatives().addAll(initiativeService.getParentGenealogyInitiatives(initiative.getId()));
 		
 		AssignationConfig config = new AssignationConfig();
 		config.setSelfBiasVisible(Boolean.valueOf(assignationDto.getConfig().getSelfBiasVisible()));
@@ -158,6 +145,7 @@ public class AssignationService {
 			for(Bill bill : assignation.getBills()) {
 				for(Receiver receiver : assignation.getReceivers()) {
 					double value = bill.getValue() * receiver.getAssignedPercent() / 100.0;
+					// #### delete or change to new version of transferFromInitiativeToUser?
 					PostResult result = tokenTransferService.transferFromInitiativeToUser(assignation.getInitiative().getId(), receiver.getUser().getC1Id(), bill.getTokenType().getId(), value);
 					
 					if (result.getResult().equals("success")) {
@@ -301,6 +289,8 @@ public class AssignationService {
 						for(Receiver receiver : assignation.getReceivers()) {
 							if (receiver.getState().equals(ReceiverState.PENDING)) {
 								double value = bill.getValue() * receiver.getAssignedPercent() / 100.0;
+								
+								// #### delete or change to new version of transferFromInitiativeToUser?
 								PostResult result = tokenTransferService.transferFromInitiativeToUser(assignation.getInitiative().getId(), receiver.getUser().getC1Id(), bill.getTokenType().getId(), value);
 								
 								if (result.getResult().equals("success")) {
@@ -396,15 +386,6 @@ public class AssignationService {
 		return  assignationRepository.findByInitiativeIdAndState(initiativeId, AssignationState.OPEN);
 	}
 	
-	@Transactional
-	public UUID getInitiativeIdOf(UUID assignationId) {
-		Assignation assignation = assignationRepository.findById(assignationId);
-		if (assignation != null) {
-			return assignation.getInitiative().getId();
-		} else {
-			return null;
-		}
-	}
 	
 	@Transactional
 	public GetResult<AssignationDto> getAssignationDto(UUID assignationId, UUID userId, Boolean addAllEvaluations) {
@@ -413,6 +394,7 @@ public class AssignationService {
 		AssignationDto assignationDto = null;
 		
 		if(assignation.getType() == AssignationType.PEER_REVIEWED) {
+			// #### delete or change to new version of getPeerReviewedAssignation?
 			assignationDto = getPeerReviewedAssignation(assignation.getInitiative().getId(), assignation.getId(), userId, addAllEvaluations);
 		} else {
 			assignationDto = assignation.toDto();

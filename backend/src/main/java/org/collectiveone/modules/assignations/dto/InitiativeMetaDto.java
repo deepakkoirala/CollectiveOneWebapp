@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.collectiveone.modules.files.FileStoredDto;
-import org.collectiveone.modules.initiatives.dto.InitiativeTagDto;
 
 public class InitiativeMetaDto {
 	
@@ -16,7 +15,6 @@ public class InitiativeMetaDto {
 	private String color;
 	private Boolean modelEnabled;
 	private String visibility;
-	private List<InitiativeTagDto> tags = new ArrayList<InitiativeTagDto>();
 	
 	public String getName() {
 		return name;
@@ -60,11 +58,6 @@ public class InitiativeMetaDto {
 	public void setVisibility(String visibility) {
 		this.visibility = visibility;
 	}
-	public List<InitiativeTagDto> getTags() {
-		return tags;
-	}
-	public void setTags(List<InitiativeTagDto> tags) {
-		this.tags = tags;
-	}
+	
 	
 }

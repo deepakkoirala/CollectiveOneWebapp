@@ -8,8 +8,6 @@ import javax.transaction.Transactional;
 
 import org.collectiveone.common.dto.PostResult;
 import org.collectiveone.modules.activity.ActivityService;
-import org.collectiveone.modules.initiatives.Initiative;
-import org.collectiveone.modules.initiatives.repositories.InitiativeRepositoryIf;
 import org.collectiveone.modules.model.ModelCardWrapper;
 import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.model.repositories.ModelCardWrapperRepositoryIf;
@@ -33,9 +31,7 @@ public class MessageService {
 	
 	@Autowired
 	private AppUserRepositoryIf appUserRepository;
-	
-	@Autowired
-	private InitiativeRepositoryIf initiativeRepository;
+
 	
 	@Autowired
 	private ModelSectionRepositoryIf modelSectionRepository;
@@ -44,6 +40,7 @@ public class MessageService {
 	private ModelCardWrapperRepositoryIf modelCardWrapperRepository;
 
 
+	// #### delete or change to new version of this function with getRootSectionIdOfMessage or we dont need this?
 	@Transactional
 	public UUID getInitiativeIdOfMessage(MessageThreadContextType contextType, UUID elementId) {
 		
@@ -53,9 +50,7 @@ public class MessageService {
 			
 			case MODEL_SECTION:
 				return modelSectionRepository.findById(elementId).getInitiative().getId();
-				
-			case INITIATIVE:
-				return initiativeRepository.findById(elementId).getId();
+		
 				
 		}
 		
@@ -67,6 +62,7 @@ public class MessageService {
 		return getInitiativeIdOfMessageThread(messageThreadRepository.findById(threadId));
 	}
 	
+	// #### delete or change to new version of this function with getRootSectionIdOfMessage or we dont need this?
 	@Transactional
 	public UUID getInitiativeIdOfMessageThread(MessageThread thread) {
 		
@@ -77,9 +73,7 @@ public class MessageService {
 			
 			case MODEL_SECTION:
 				return thread.getModelSection().getInitiative().getId();
-				
-			case INITIATIVE:
-				return thread.getInitiative().getId();
+			
 				
 		}
 		
@@ -97,9 +91,6 @@ public class MessageService {
 			
 			case MODEL_SECTION:
 				return thread.getModelSection().getId();
-				
-			case INITIATIVE:
-				return thread.getInitiative().getId();
 				
 		}
 		
@@ -182,13 +173,6 @@ public class MessageService {
 					section.setMessageThread(thread);
 					modelSectionRepository.save(section);
 					break;
-					
-				case INITIATIVE:
-					Initiative initiative = initiativeRepository.findById(elementId);
-					thread.setInitiative(initiative);
-					initiative.setMessageThread(thread);
-					initiativeRepository.save(initiative);
-					break;
 			}
 		}
 		
@@ -204,9 +188,6 @@ public class MessageService {
 			
 			case MODEL_SECTION:
 				return messageThreadRepository.findByModelSection_Id(elementId);
-				
-			case INITIATIVE:
-				return messageThreadRepository.findByInitiative_Id(elementId);
 			
 		}
 		

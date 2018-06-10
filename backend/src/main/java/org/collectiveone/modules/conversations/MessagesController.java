@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.collectiveone.common.BaseController;
 import org.collectiveone.common.dto.PostResult;
-import org.collectiveone.modules.initiatives.InitiativeService;
 import org.collectiveone.modules.model.ModelController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +20,6 @@ public class MessagesController extends BaseController {
 	
 	@Autowired
 	private MessageService messageService;
-	
-	@Autowired
-	private InitiativeService initiativeService;
 	
 	@Autowired
 	ModelController modelController;
@@ -47,6 +43,8 @@ public class MessagesController extends BaseController {
 		UUID contextOfContextElementId = contextOfContextElementIdStr.equals("") ? null : UUID.fromString(contextOfContextElementIdStr);
 		
 		/* Permission to comment is default to ecosystem for now */
+		
+		// #### delete or change to new version of isMemberOfEco.... on section related?
 		if (!initiativeService.isMemberOfEcosystem(initiativeId, getLoggedUserId())) {
 			return new PostResult("error", "not authorized", "");
 		}

@@ -17,7 +17,6 @@ import org.collectiveone.modules.activity.enums.ActivityType;
 import org.collectiveone.modules.activity.enums.NotificationState;
 import org.collectiveone.modules.activity.repositories.NotificationRepositoryIf;
 import org.collectiveone.modules.activity.repositories.WantToContributeRepositoryIf;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.users.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -74,6 +73,7 @@ public class EmailService {
 			segmentedPerUserAndInitiativeNotifications.clear();
 			
 			for (Notification notification : theseNotifications) {
+				// ##### need to remove whole block or only put code for ix== -1 without if?
 				int ix = indexOfInitiative(notification.getActivity().getInitiative().getId());
 				if (ix == -1) {
 					List<Notification> newArray = new ArrayList<Notification>();
@@ -85,6 +85,8 @@ public class EmailService {
 			}
 			
 			String subresult = "";
+			// ##### here too, should i remove whole block as it looks sending notifications to initiatibe
+			// #### or need to modify sendSegmentedPerUserAndInitiativeNotifications? to accept only user?
 			try {
 				subresult = sendSegmentedPerUserAndInitiativeNotifications(
 						theseNotifications,
@@ -183,15 +185,7 @@ public class EmailService {
 		return -1;
 	}
 	
-	private int indexOfInitiative(UUID initiativeId) {
-		for (int ix = 0; ix < segmentedPerUserAndInitiativeNotifications.size(); ix++) {
-			if (segmentedPerUserAndInitiativeNotifications.get(ix).get(0).getActivity().getInitiative().getId().equals(initiativeId)) {
-				return ix; 
-			}
-		}
-		return -1;
-	}
-	
+	// #### this methods seems initiative related right? delete whole
 	private String sendSegmentedPerUserAndInitiativeNotifications(List<Notification> notifications, AppUser receiver, Initiative initiative) throws IOException {
 		if(env.getProperty("collectiveone.webapp.send-email-enabled").equalsIgnoreCase("true")) {
 			if(notifications.size() > 0 && receiver.getEmailNotificationsEnabled()) {
@@ -379,7 +373,10 @@ public class EmailService {
 			
 			if (notification.getAdmin().getEmailNotificationsEnabled()) {
 				String toEmailString = notification.getAdmin().getEmail();
+
+				// #### deleteing this line is it OK?
 				Initiative initiative = notification.getInitiative();
+
 				String acceptRequestUrl = env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
 						initiative.getId().toString() + "/people/addMember/" + notification.getUser().getC1Id().toString();
 				
@@ -390,7 +387,9 @@ public class EmailService {
 				toEmail.setEmail(toEmailString);
 				
 				personalization.addTo(toEmail);
+				// #### also below line
 				personalization.addSubstitution("$INITIATIVE_ANCHOR$", getInitiativeAnchor(initiative));
+
 				personalization.addSubstitution("$USER_NICKNAME$", notification.getUser().getProfile().getNickname());
 				personalization.addSubstitution("$USER_PICTURE$", notification.getUser().getProfile().getPictureUrl());
 				personalization.addSubstitution("$USER_EMAIL$", notification.getUser().getEmail());
@@ -440,6 +439,7 @@ public class EmailService {
 		return mail;
 	}
 	
+	// #### delete this whole method as it seems fully initiative related
 	private Personalization basicInitiativePersonalization(Notification notification) {
 		String toEmailString = notification.getSubscriber().getUser().getEmail();
 		String triggeredByUsername = notification.getActivity().getTriggerUser().getProfile().getNickname();
@@ -464,11 +464,13 @@ public class EmailService {
 		return personalization;
 	}
 	
+	// #### should i delete this too as it is fully initiative related
 	private String getInitiativeAnchor(Initiative initiative) {
 		return "<a href=" + env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
 				initiative.getId().toString() + "/overview>" + initiative.getMeta().getName() + "</a>";
 	}
 	
+	// #### should i delete this too as it is fully initiative related
 	private String getUnsuscribeFromInitiativeHref(Initiative initiative) {
 		return env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/unsubscribe?fromInitiativeId=" + 
 				initiative.getId().toString() + "&fromInitiativeName=" + initiative.getMeta().getName();

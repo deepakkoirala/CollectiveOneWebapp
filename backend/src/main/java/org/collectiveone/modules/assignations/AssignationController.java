@@ -10,7 +10,6 @@ import org.collectiveone.modules.assignations.dto.AssignationDto;
 import org.collectiveone.modules.assignations.dto.EvaluationDto;
 import org.collectiveone.modules.governance.DecisionVerdict;
 import org.collectiveone.modules.governance.GovernanceService;
-import org.collectiveone.modules.initiatives.InitiativeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,9 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/1")
 public class AssignationController extends BaseController {
-	
-	@Autowired
-	private InitiativeService initiativeService;
 	
 	@Autowired
 	private AssignationService assignationService;
@@ -61,6 +57,7 @@ public class AssignationController extends BaseController {
 		
 		UUID initiativeId = UUID.fromString(initiativeIdStr);
 		
+		// #### delete or change to new version of canAccess?
 		if (!initiativeService.canAccess(initiativeId, getLoggedUserId())) {
 			return new GetResult<List<AssignationDto>>("error", "access denied", null);
 		}
@@ -80,6 +77,7 @@ public class AssignationController extends BaseController {
 		
 		UUID initiativeId = UUID.fromString(initiativeIdStr);
 		
+		// #### delete or change to new version of canAccess?
 		if (!initiativeService.canAccess(initiativeId, getLoggedUserId())) {
 			return new GetResult<List<AssignationDto>>("error", "access denied", null);
 		}
@@ -96,7 +94,8 @@ public class AssignationController extends BaseController {
 		
 		UUID assignationId = UUID.fromString(assignationIdStr); 
 		UUID initiativeId = assignationService.findInitiativeId(assignationId);
-				
+		
+		// #### delete or change to new version of canAccess?
 		if (!initiativeService.canAccess(initiativeId, getLoggedUserId())) {
 			return new GetResult<AssignationDto>("error", "access denied", null);
 		}

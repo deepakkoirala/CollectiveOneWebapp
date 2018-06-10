@@ -8,8 +8,6 @@ import org.collectiveone.common.dto.GetResult;
 import org.collectiveone.common.dto.PostResult;
 import org.collectiveone.modules.governance.DecisionVerdict;
 import org.collectiveone.modules.governance.GovernanceService;
-import org.collectiveone.modules.initiatives.Initiative;
-import org.collectiveone.modules.initiatives.InitiativeService;
 import org.collectiveone.modules.model.ModelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,9 +30,6 @@ public class FilesController extends BaseController {
 	
 	@Autowired
 	private ModelService modelService;
-	
-	@Autowired
-	private InitiativeService initiativeService;
 	
 	
     @RequestMapping(value = "/upload/profileImage", method = RequestMethod.POST)
@@ -70,7 +65,8 @@ public class FilesController extends BaseController {
 			return new PostResult("error", "endpoint enabled users only", "");
 		}
     	
-    	UUID cardWrapperId = UUID.fromString(cardWrapperIdStr);
+		UUID cardWrapperId = UUID.fromString(cardWrapperIdStr);
+		// #### delete or change to new version of canEditModel based on root section id?
     	Initiative initiative = modelService.getCardWrapperInitiative(cardWrapperId);
     	
     	if (governanceService.canEditModel(initiative.getId(), getLoggedUserId()) == DecisionVerdict.DENIED) {
@@ -98,15 +94,20 @@ public class FilesController extends BaseController {
     	
     	return fileService.uploadInitiativeImage(getLoggedUserId(), initiativeId, file);
     }
-    
+	
+	// #### files for initiative? can remove? or changes to suite section?
+	@Transactional
     @RequestMapping(value = "/files/{fileId}", method = RequestMethod.GET)
     public @ResponseBody GetResult<FileStoredDto> getFileData (
     		@PathVariable("fileId") String fileIdStr) {
     	
-    	UUID fileId = UUID.fromString(fileIdStr);
+		UUID fileId = UUID.fromString(fileIdStr);
+		
+		// #### get root section here?
     	Initiative initiative = fileService.getFileInitiative(fileId);
     	
     	if (initiative != null) {
+			// #### how canAccess will be without initiative id?
     		if (!initiativeService.canAccess(initiative.getId(), getLoggedUserId())) {
     			return new GetResult<FileStoredDto>("error", "access denied", null);
     		}

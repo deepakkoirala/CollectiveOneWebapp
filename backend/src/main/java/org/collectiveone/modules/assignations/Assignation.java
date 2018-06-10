@@ -23,7 +23,6 @@ import org.collectiveone.modules.assignations.dto.AssignationDto;
 import org.collectiveone.modules.assignations.dto.AssignationDtoLight;
 import org.collectiveone.modules.assignations.enums.AssignationState;
 import org.collectiveone.modules.assignations.enums.AssignationType;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.users.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -40,11 +39,6 @@ public class Assignation {
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 	
-	@ManyToOne
-	private Initiative initiative;
-	
-	@ManyToMany(cascade = CascadeType.ALL)
-	private List<Initiative> alsoInInitiatives = new ArrayList<Initiative>();
 	
 	@Column(name = "motive", length = 55)
 	private String motive;
@@ -89,8 +83,6 @@ public class Assignation {
 		dto.setMotive(motive);
 		dto.setNotes(notes);
 		dto.setState(state.toString());
-		dto.setInitiativeId(initiative.getId().toString());
-		dto.setInitiativeName(initiative.getMeta().getName());
 		dto.setCreationDate(creationDate.getTime());
 		
 		for(Bill bill : bills) {
@@ -108,8 +100,6 @@ public class Assignation {
 		dto.setMotive(motive);
 		dto.setNotes(notes);
 		dto.setState(state.toString());
-		dto.setInitiativeId(initiative.getId().toString());
-		dto.setInitiativeName(initiative.getMeta().getName());
 		dto.setCreationDate(creationDate.getTime());
 		dto.setConfig(config.toDto());
 		
@@ -130,22 +120,6 @@ public class Assignation {
 
 	public void setId(UUID id) {
 		this.id = id;
-	}
-
-	public Initiative getInitiative() {
-		return initiative;
-	}
-
-	public void setInitiative(Initiative initiative) {
-		this.initiative = initiative;
-	}
-	
-	public List<Initiative> getAlsoInInitiatives() {
-		return alsoInInitiatives;
-	}
-
-	public void setAlsoInInitiatives(List<Initiative> alsoInInitiatives) {
-		this.alsoInInitiatives = alsoInInitiatives;
 	}
 
 	public String getMotive() {

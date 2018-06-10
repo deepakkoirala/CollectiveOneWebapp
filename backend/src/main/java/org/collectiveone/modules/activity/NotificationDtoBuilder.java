@@ -11,7 +11,6 @@ import org.collectiveone.modules.activity.dto.NotificationDto;
 import org.collectiveone.modules.assignations.Assignation;
 import org.collectiveone.modules.assignations.Evaluator;
 import org.collectiveone.modules.assignations.Receiver;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.model.ModelCardWrapper;
 import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.tokens.InitiativeTransfer;
@@ -39,8 +38,7 @@ public class NotificationDtoBuilder {
 		
 		Activity act = notification.getActivity();
 		
-		Initiative initiative = act.getInitiative();
-		Initiative subInitiative = act.getSubInitiative();
+	
 		TokenType tokenType = act.getTokenType();
 		TokenMint mint = act.getMint();
 		Assignation assignation = act.getAssignation();
@@ -70,37 +68,15 @@ public class NotificationDtoBuilder {
 		
 		switch (notification.getActivity().getType()) {
 			
-		case INITIATIVE_CREATED:
-			message = checkHtml("<p>") + "created the " + getInitiativeAnchor(initiative) + checkHtml(" initiative and added you as a member.</p>");
-			url = getInitiativeUrl(initiative.getId());
-			break;
-
-		case INITIATIVE_EDITED:
-			message = checkHtml("<p>") + "edited the " + checkHtml("name or purpose of the ") + getInitiativeAnchor(initiative) + " initiative"  + checkHtml(".</p>");
-			url = getInitiativeUrl(initiative.getId());
-			break;
-		
-		case INITIATIVE_DELETED:
-			message =  checkHtml("<p>") + "deleted the initiative " + getInitiativeAnchor(initiative) + checkHtml(".</p>");
-			url = getInitiativeUrl(initiative.getId());
-			break;
-				
-		case SUBINITIATIVE_CREATED:
-			message = checkHtml("<p>") + "created the " + getInitiativeAnchor(subInitiative) + " sub-initiative." + checkHtml("</p>");
-			if (act.getInitiativeTransfers() != null) {
-				message += checkHtml("<p>") + " And transferred " + getTransferString(act.getInitiativeTransfers()) + " to it." + checkHtml("</p>");
-			}	
-			url = getInitiativeUrl(subInitiative.getId());
-			break;
 
 		case TOKENS_MINTED:
 			message = checkHtml("<p>") + "minted " + mint.getValue() + " " + mint.getToken().getName() + " with motive: " + mint.getMotive() + ".</p>";
-			url = getInitiativeUrl(initiative.getId());
+			url = getInitiativeUrl(initiative.getId()); // #### here will need to get section url?
 			break;
 			
 		case TOKEN_CREATED:
 			message = checkHtml("<p>") + "created a new token type called " + tokenType.getName() + " in " + getInitiativeAnchor(initiative) + ", and minted " + mint.getValue() + " units.</p>";
-			url = getInitiativeUrl(initiative.getId());
+			url = getInitiativeUrl(initiative.getId()); // #### here will need to get section url?
 			break;
 			
 		case PR_ASSIGNATION_CREATED:
@@ -148,7 +124,7 @@ public class NotificationDtoBuilder {
 						getAssignationAnchor(assignation) + " page to make your evaluation." + 
 						"You have until " + dateFormat.format(closeDate) + " at this time of the day to do it.";
 			}
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 		
 		case PR_ASSIGNATION_DONE: 
@@ -158,7 +134,7 @@ public class NotificationDtoBuilder {
 					checkHtml("<p>") + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + 
 					" have been transferred to its receivers." + checkHtml("</p>");
 			
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case D_ASSIGNATION_CREATED:
@@ -166,17 +142,9 @@ public class NotificationDtoBuilder {
 				assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() +
 				" to " + assignation.getReceivers().get(0).getUser().getProfile().getNickname() + ", with motive: " + 
 				checkHtml("</p><p>") + assignation.getMotive() + checkHtml("</p>");
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
-		case INITIATIVE_TRANSFER:			
-			message = checkHtml("<p>") + "made a transfer of " + 
-					transfer.getValue() + " " + transfer.getTokenType().getName() +
-					" to " + getInitiativeAnchor(transfer.getTo()) + ", with motive: " + 
-					checkHtml("</p><p>") + transfer.getMotive() + checkHtml("</p>");
-			url = getInitiativeUrl(initiative.getId());
-			break;
-
 		case ASSIGNATION_REVERT_ORDERED: 	
 			message = checkHtml("<p>") + "wants to revert the " + getAssignationAnchor(assignation) + 
 				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + 
@@ -187,111 +155,111 @@ public class NotificationDtoBuilder {
 							+ "visiting the " + getAssignationAnchor(assignation) + " page.</p>";
 				}
 			}
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 
 			
 		case ASSIGNATION_REVERT_CANCELLED: 
 			message = checkHtml("<p>") + "ordered a revert of the " + getAssignationAnchor(assignation) + 
 				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() +  ", but the revert has been cancelled.</p> ";
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 		
 		case ASSIGNATION_REVERTED: 
 			message = checkHtml("<p>") + "ordered a revert of the " + getAssignationAnchor(assignation) + 
 				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + " with motive: " + assignation.getMotive() + ", and the revert has been accepted.</p> ";
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 		
 		case ASSIGNATION_DELETED: 
 			message = checkHtml("<p>") + "deleted the ongoing " + getAssignationAnchor(assignation) + 
 				" of " + assignation.getBills().get(0).getValue() + " " + assignation.getBills().get(0).getTokenType().getName() + 
 				" with motive: " + assignation.getMotive() + ". No tokens have or will be transferred." + checkHtml("</p>");
-			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId());
+			url = getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_SECTION_CREATED:
 			message = checkHtml("<p>") + "created the subsection " + getModelSectionAnchor(modelSection) + 
 				" under section " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());		
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());	 // #### here will need to get url without initiativeId?	
 			break;
 			
 		case MODEL_SECTION_EDITED:
 			message = checkHtml("<p>") + "edited the model section " + getModelSectionAnchor(modelSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_SECTION_DELETED:
 			message = checkHtml("<p>") + "deleted the model section " + getModelSectionAnchor(modelSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_CREATED:
 			message = checkHtml("<p>") + "created the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
 					" on section " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId but sectionid?
 			break;
 			
 		case MODEL_CARDWRAPPER_MADE_SHARED:
 			message = checkHtml("<p>") + "made the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
 			" on section " + getModelSectionAnchor(onSection) + checkHtml(" visible</p>");
 			
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_MADE_COMMON:
 			message = checkHtml("<p>") + "made the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
 			" on section " + getModelSectionAnchor(onSection) + checkHtml(" common</p>");
 			
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_EDITED:
 			message = checkHtml("<p>") + "edited the card " + getModelCardWrapperAnchor(modelCardWrapper) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_DELETED:
 			message = checkHtml("<p>") + "deleted the card " + getModelCardWrapperAnchor(modelCardWrapper) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_SECTION_ADDED: 
 			message = checkHtml("<p>") + "added the section " + getModelSectionAnchor(modelSection) + 
 				" as sub-section of " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());		
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());	 // #### here will need to get url without initiativeId?	
 			break;
 			
 		case MODEL_SECTION_MOVED:
 			message = checkHtml("<p>") + "moved the section " + getModelSectionAnchor(modelSection) + 
 				" from " + getModelSectionAnchor(fromSection) + 
 				" to " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());		
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());	// #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_SECTION_REMOVED:
 			message = checkHtml("<p>") + "removed the section " + getModelSectionAnchor(modelSection) + 
 				" from " + getModelSectionAnchor(fromSection) + checkHtml("</p>");
-			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());
+			url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_ADDED:
 			message = checkHtml("<p>") + "added the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
 					" under section " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_MOVED:
 			message = checkHtml("<p>") + "moved the card " + getModelCardWrapperAnchor(modelCardWrapper, onSection) + 
 					" from " + getModelSectionAnchor(fromSection) + 
 					" to " + getModelSectionAnchor(onSection) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), onSection.getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MODEL_CARDWRAPPER_REMOVED:
 			message = checkHtml("<p>") + "removed the card " + getModelCardWrapperAnchor(modelCardWrapper, fromSection) + 
 					" from section " + getModelSectionAnchor(fromSection) + checkHtml("</p>");
-			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId());
+			url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 			break;
 			
 		case MESSAGE_POSTED:
@@ -304,14 +272,14 @@ public class NotificationDtoBuilder {
 					from = getModelCardWrapperName(modelCardWrapper) + " card";
 				}
 				
-				url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId());
+				url = getModelCardWrapperUrl(modelCardWrapper.getInitiative().getId(), modelCardWrapper.getId()); // #### here will need to get url without initiativeId?
 				
 			} else if (notification.getActivity().getModelSection() != null) {
 				
 				from = getModelSectionAnchor(modelSection) + " section";
-				url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId());
+				url = getModelSectionUrl(modelSection.getInitiative().getId(), modelSection.getId()); // #### here will need to get url without initiativeId?
 				
-			} else if (notification.getActivity().getInitiative() != null) {
+			} else if (notification.getActivity().getInitiative() != null) { // #### here will need to get root section
 				
 				from = getInitiativeAnchor(initiative) + " initiative";
 				url = getInitiativeUrl(initiative.getId());
@@ -373,12 +341,14 @@ public class NotificationDtoBuilder {
 				initiativeId.toString() + "/model/card/" + cardWrapperId.toString();
 	}
 	
+	// #### delete or change to new version?
 	private String getInitiativeAnchor(Initiative initiative) {
 		return checkHtml("<a href=" + getInitiativeUrl(initiative.getId()) + ">") +  initiative.getMeta().getName() + checkHtml("</a>");
 	}
 	
+	
 	private String getAssignationAnchor(Assignation assignation) {
-		
+		// #### get url based on ?
 		return checkHtml("<a href=" + getAssignationUrl(assignation.getInitiative().getId(), assignation.getId()) + ">") + "transfer" + checkHtml("</a>");
 	}
 	
@@ -390,14 +360,17 @@ public class NotificationDtoBuilder {
 		}
 	}
 
+	// #### delete or change to new version to getModelSectionUrl by sectionId only? or any extra param?
 	private String getModelSectionAnchor(ModelSection section) {
 		return checkHtml("<a href=" + getModelSectionUrl(section.getInitiative().getId(), section.getId()) + ">") + section.getTitle() + checkHtml("</a>");
 	}
 	
+	// #### delete or change to new version to getModelSectionUrl by sectionId only? or any extra param?
 	private String getModelCardWrapperAnchor(ModelCardWrapper cardWrapper, ModelSection onSection) {
 		return checkHtml("<a href=" + getModelCardWrapperUrl(cardWrapper.getInitiative().getId(), onSection.getId(), cardWrapper.getId()) + ">") + getModelCardWrapperName(cardWrapper) + checkHtml("</a>");
 	}
 	
+	// #### delete or change to new version to getModelSectionUrl by sectionId only? or any extra param?
 	private String getModelCardWrapperAnchor(ModelCardWrapper cardWrapper) {
 		return checkHtml("<a href=" + getModelCardWrapperUrl(cardWrapper.getInitiative().getId(),cardWrapper.getId()) + ">") + getModelCardWrapperName(cardWrapper) + checkHtml("</a>");
 	}

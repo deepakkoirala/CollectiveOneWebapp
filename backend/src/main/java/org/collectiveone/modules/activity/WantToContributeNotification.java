@@ -12,7 +12,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.collectiveone.modules.activity.enums.NotificationState;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.users.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -27,8 +26,6 @@ public class WantToContributeNotification {
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 	
-	@ManyToOne
-	private Initiative initiative;
 	
 	@ManyToOne
 	private AppUser user;
@@ -49,13 +46,6 @@ public class WantToContributeNotification {
 		this.id = id;
 	}
 
-	public Initiative getInitiative() {
-		return initiative;
-	}
-
-	public void setInitiative(Initiative initiative) {
-		this.initiative = initiative;
-	}
 
 	public AppUser getUser() {
 		return user;
