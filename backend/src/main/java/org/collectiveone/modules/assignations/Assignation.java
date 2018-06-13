@@ -13,7 +13,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -23,6 +22,7 @@ import org.collectiveone.modules.assignations.dto.AssignationDto;
 import org.collectiveone.modules.assignations.dto.AssignationDtoLight;
 import org.collectiveone.modules.assignations.enums.AssignationState;
 import org.collectiveone.modules.assignations.enums.AssignationType;
+import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.users.AppUser;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -39,6 +39,8 @@ public class Assignation {
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 	
+	@ManyToOne
+	private ModelSection section;
 	
 	@Column(name = "motive", length = 55)
 	private String motive;
@@ -201,5 +203,15 @@ public class Assignation {
 	public void setConfig(AssignationConfig config) {
 		this.config = config;
 	}
+
+	public ModelSection getSection() {
+		return section;
+	}
+
+	public void setSection(ModelSection section) {
+		this.section = section;
+	}
+	
+	
 	
 }

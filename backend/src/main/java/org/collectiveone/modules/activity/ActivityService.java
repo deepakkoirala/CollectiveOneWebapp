@@ -465,7 +465,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.PR_ASSIGNATION_CREATED);
 		activity.setTriggerUser(triggerUser);
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); // #### Set section later?
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -594,7 +594,7 @@ public class ActivityService {
 	// #### is this model section exists now or not?
 	@Transactional
 	public void modelSectionCreated(ModelSection section, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_CREATED);
 		activity.setModelSection(section);
@@ -640,7 +640,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionMovedFromSectionToSection(ModelSection section, ModelSection fromSection, ModelSection onSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_MOVED);
 		activity.setModelSection(section);
@@ -680,7 +680,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperCreated(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_CREATED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -691,7 +691,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperMadeShared(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_MADE_SHARED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -702,7 +702,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperMadeCommon(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative());  // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection());  // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_MADE_COMMON);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -713,7 +713,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperAdded(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative());  // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection());  // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_ADDED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -724,7 +724,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperEdited(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_EDITED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -736,7 +736,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperMoved(ModelCardWrapperAddition cardWrapperAddition, ModelSection fromSection, ModelSection onSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_MOVED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -749,7 +749,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperRemoved(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); // #### how should i get activity from now, section UUID
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_REMOVED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -761,7 +761,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelCardWrapperDeleted(ModelCardWrapperAddition cardWrapperAddition, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection().getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, cardWrapperAddition.getSection()); 
 		
 		activity.setType(ActivityType.MODEL_CARDWRAPPER_DELETED);
 		activity.setModelCardWrapperAddition(cardWrapperAddition);
@@ -816,13 +816,13 @@ public class ActivityService {
 	
 	
 	
-	private Activity getBaseActivity(AppUser triggerUser, Initiative initiative) { // #### how should i get activity from now, section UUID
+	private Activity getBaseActivity(AppUser triggerUser, ModelSection section) { // #### how should i get activity from now, section UUID
 		Activity activity = new Activity();
 		
 		activity.setTriggerUser(triggerUser);
-		activity.setInitiative(initiative);
+		activity.setModelSection(section);
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
-
+		
 		return activity;
 	}
 	
@@ -837,20 +837,6 @@ public class ActivityService {
 	/** To be called within an activity transaction, modifies the notifications property of the
 	 * input activity */
 	
-	/* Special case of new initiative created. ALl members are notified, not the subscribers */
-
-	// #### how should remove whole method or update this get members from
-	private void addNewInitiativeNotifications (Activity activity) {
-		SortedSet<Member> members = activity.getInitiative().getMembers();  // #### how should i get activity from now, section UUID
-		
-		for (Member member : members) {
-			if(activity.getTriggerUser().getC1Id() != member.getUser().getC1Id()) {
-				/* add a notification only if the trigger user is not the subscriber */
-				Subscriber subscriber = subscriberRepository.findByUser_C1IdAndType(member.getUser().getC1Id(), SubscriptionElementType.COLLECTIVEONE);
-				createSubscriberNotification(subscriber, activity);
-			}
-		}
-	}
 	
 	private Boolean isInModel(Activity activity) {
 		Boolean isInModel = false;
@@ -995,11 +981,6 @@ public class ActivityService {
 				break;
 		}
 		
-		if (initiativeId != null) {
-			/* if not found in section or not relative to section, look on initiatives */
-			applicableSubscriber = findSubscriberOnInitiatives(userId, initiativeId, skipOne);	
-		}
-		
 		/* if not found a CUSTOM subscriber in any section or initiative, use the user global subscriber */
 		if (applicableSubscriber == null) {
 			applicableSubscriber = subscriberRepository.findByUser_C1IdAndType(userId, SubscriptionElementType.COLLECTIVEONE);
@@ -1040,37 +1021,6 @@ public class ActivityService {
 	}
 	
 
-	// #### should i remove this whole method or change this to find subscriber on sections like findSubscriberOnInitiatives
-	private Subscriber findSubscriberOnInitiatives(UUID userId, UUID initiativeId, Boolean skipOne) {
-		
-		Subscriber subscriber = null; 
-		
-		if (!skipOne) {
-			subscriber = subscriberRepository.findByElementIdAndTypeAndUser_C1Id(initiativeId, SubscriptionElementType.INITIATIVE, userId);
-			
-			if (subscriber != null) {
-				if (subscriber.getInheritConfig() == SubscriberInheritConfig.CUSTOM) {
-					return subscriber;	
-				}
-			}	
-		}
-		
-		List<Initiative> parents = initiativeService.getParentGenealogyInitiatives(initiativeId);
-		
-		for (Initiative parent : parents) {
-			subscriber = subscriberRepository.findByElementIdAndTypeAndUser_C1Id(parent.getId(), SubscriptionElementType.INITIATIVE, userId);
-			if (subscriber != null) {
-				if (subscriber.getInheritConfig() == SubscriberInheritConfig.CUSTOM) {
-					return subscriber;
-				}
-			}
-		}
-		
-		/* this should not occur, at least one subscriber CUSTOM subscriber should exist */
-		return null;
-		
-	}
-	
 	private void createNotifications (Activity activity) {
 		
 		/* this method build the full list of subscribers and add a notification for each of them */
