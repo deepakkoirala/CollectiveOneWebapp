@@ -35,7 +35,7 @@ public class ModelCardWrapper {
 	private UUID id;
 	
 	@ManyToOne
-	private Initiative initiative;
+	private ModelSection rootSection;
 	
 	@OneToOne(cascade = CascadeType.ALL)
 	private ModelCard card;
@@ -105,12 +105,12 @@ public class ModelCardWrapper {
 		this.id = id;
 	}
 	
-	public Initiative getInitiative() {
-		return initiative;
+	public ModelSection getRootSection() {
+		return rootSection;
 	}
 
-	public void setInitiative(Initiative initiative) {
-		this.initiative = initiative;
+	public void setInitiative(ModelSection rootSection) {
+		this.rootSection = rootSection;
 	}
 	
 	public ModelCard getCard() {

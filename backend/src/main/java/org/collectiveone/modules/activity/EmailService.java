@@ -74,7 +74,7 @@ public class EmailService {
 			
 			for (Notification notification : theseNotifications) {
 				// ##### need to remove whole block or only put code for ix== -1 without if?
-				int ix = indexOfInitiative(notification.getActivity().getInitiative().getId());
+				int ix = indexOfInitiative(notification.getActivity().getSection().getId());
 				if (ix == -1) {
 					List<Notification> newArray = new ArrayList<Notification>();
 					newArray.add(notification);
@@ -91,7 +91,7 @@ public class EmailService {
 				subresult = sendSegmentedPerUserAndInitiativeNotifications(
 						theseNotifications,
 						theseNotifications.get(0).getSubscriber().getUser(),
-						theseNotifications.get(0).getActivity().getInitiative());
+						theseNotifications.get(0).getActivity().getModelSection());
 				
 			} catch (Exception ex) {
 				subresult = "error sending emails";
@@ -185,7 +185,7 @@ public class EmailService {
 		return -1;
 	}
 	
-	// #### this methods seems initiative related right? delete whole
+	// ##### this methods seems initiative related right? delete whole
 	private String sendSegmentedPerUserAndInitiativeNotifications(List<Notification> notifications, AppUser receiver, Initiative initiative) throws IOException {
 		if(env.getProperty("collectiveone.webapp.send-email-enabled").equalsIgnoreCase("true")) {
 			if(notifications.size() > 0 && receiver.getEmailNotificationsEnabled()) {

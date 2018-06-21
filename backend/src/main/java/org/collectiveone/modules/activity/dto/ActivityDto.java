@@ -15,8 +15,6 @@ public class ActivityDto {
 	private String type;
 	private Long timestamp;
 	private AppUserDto triggerUser;
-	private InitiativeDto initiative;
-	private InitiativeDto subInitiative;
 	private String oldName;
 	private String oldDriver;
 	private TokenMintDto mint;
@@ -54,18 +52,7 @@ public class ActivityDto {
 	public void setTriggerUser(AppUserDto triggerUser) {
 		this.triggerUser = triggerUser;
 	}
-	public InitiativeDto getInitiative() {
-		return initiative;
-	}
-	public void setInitiative(InitiativeDto initiative) {
-		this.initiative = initiative;
-	}
-	public InitiativeDto getSubInitiative() {
-		return subInitiative;
-	}
-	public void setSubInitiative(InitiativeDto subInitiative) {
-		this.subInitiative = subInitiative;
-	}
+	
 	public String getOldName() {
 		return oldName;
 	}

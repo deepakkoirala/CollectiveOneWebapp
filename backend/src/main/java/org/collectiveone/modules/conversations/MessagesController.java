@@ -44,7 +44,7 @@ public class MessagesController extends BaseController {
 		
 		/* Permission to comment is default to ecosystem for now */
 		
-		// #### delete or change to new version of isMemberOfEco.... on section related?
+		// ##### delete or change to new version of 
 		if (!initiativeService.isMemberOfEcosystem(initiativeId, getLoggedUserId())) {
 			return new PostResult("error", "not authorized", "");
 		}

@@ -165,27 +165,15 @@ public class ActivityService {
 		
 		}
 		
-		if(isModel == true) {
-			if (allSectionIds.size() == 0) {
-				allSectionIds.add(UUID.randomUUID());
-			}
-			
-			if (cardsIds.size() == 0) {
-				cardsIds.add(UUID.randomUUID());
-			}
-			
-			return notificationRepository.findOfUserInSections(userId, NotificationState.PENDING, allSectionIds, cardsIds, page);
-			
-		} else {
-			List<InitiativeDto> subinitiativesTree = initiativeService.getSubinitiativesTree(elementId, null);
-			
-			List<UUID> allInitiativesIds = new ArrayList<UUID>();
-			
-			allInitiativesIds.add(elementId);
-			allInitiativesIds.addAll(extractAllIdsFromInitiativesTree(subinitiativesTree, new ArrayList<UUID>()));
-			
-			return notificationRepository.findOfUserInInitiatives(userId, NotificationState.PENDING, allInitiativesIds, page);
+		if (allSectionIds.size() == 0) {
+			allSectionIds.add(UUID.randomUUID());
 		}
+		
+		if (cardsIds.size() == 0) {
+			cardsIds.add(UUID.randomUUID());
+		}
+		
+		return notificationRepository.findOfUserInSections(userId, NotificationState.PENDING, allSectionIds, cardsIds, page);
 		
 		
 	}
@@ -429,8 +417,8 @@ public class ActivityService {
 	 * */
 
 	@Transactional
-	public void newTokenCreated(Initiative initiative, AppUser triggerUser, TokenType token, TokenMint mint) {
-		Activity activity = getBaseActivity(triggerUser, initiative); 
+	public void newTokenCreated(ModelSection section, AppUser triggerUser, TokenType token, TokenMint mint) {
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.TOKEN_CREATED);
 		activity.setTokenType(token);
@@ -444,12 +432,12 @@ public class ActivityService {
 	
 	
 	@Transactional
-	public void tokensMinted(Initiative initiative, TokenMint mint) {
+	public void tokensMinted(ModelSection section, TokenMint mint) {
 		Activity activity = new Activity();
 		
 		activity.setType(ActivityType.TOKENS_MINTED);
 		activity.setTriggerUser(mint.getOrderedBy());
-		activity.setInitiative(initiative);
+		activity.setModelSection(section);
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setMint(mint);
@@ -481,7 +469,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.PR_ASSIGNATION_DONE);
 		activity.setTriggerUser(assignation.getCreator());
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); // #### Set section later?
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -497,7 +485,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.D_ASSIGNATION_CREATED);
 		activity.setTriggerUser(triggerUser);
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); 
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -513,7 +501,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.INITIATIVE_TRANSFER);
 		activity.setTriggerUser(transfer.getOrderedBy());
-		activity.setInitiative(transfer.getFrom()); // #### Set section later?
+		activity.setModelSection(transfer.getFrom()); // #####  should i reanme InitiativeTeransfer to section transfer
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setInitiativeTransfer(transfer);
@@ -529,7 +517,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.ASSIGNATION_REVERT_ORDERED);
 		activity.setTriggerUser(triggerUser);
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); 
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -547,7 +535,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.ASSIGNATION_REVERT_CANCELLED);
 		activity.setTriggerUser(revertOrder.getTriggerUser());
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); 
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -565,7 +553,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.ASSIGNATION_REVERTED);
 		activity.setTriggerUser(revertOrder.getTriggerUser());
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); // #### Set section later?
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -581,7 +569,7 @@ public class ActivityService {
 		
 		activity.setType(ActivityType.ASSIGNATION_DELETED);
 		activity.setTriggerUser(triggerUser);
-		activity.setInitiative(assignation.getInitiative()); // #### Set section later?
+		activity.setModelSection(assignation.getSection()); // #### Set section later?
 		activity.setTimestamp(new Timestamp(System.currentTimeMillis()));
 		
 		activity.setAssignation(assignation);
@@ -605,7 +593,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionCreatedOnSection(ModelSection section, ModelSection onSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_CREATED);
 		activity.setModelSection(section);
@@ -617,7 +605,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionEdited(ModelSection section, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_EDITED);
 		activity.setModelSection(section);
@@ -628,7 +616,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionRemovedFromSection(ModelSection section, ModelSection fromSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_REMOVED);
 		activity.setModelSection(section);
@@ -640,7 +628,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionMovedFromSectionToSection(ModelSection section, ModelSection fromSection, ModelSection onSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_MOVED);
 		activity.setModelSection(section);
@@ -655,7 +643,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelNewSubsection(ModelSection section, ModelSection onSection, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_CREATED);
 		activity.setModelSection(section);
@@ -667,7 +655,7 @@ public class ActivityService {
 	
 	@Transactional
 	public void modelSectionDeleted(ModelSection section, AppUser triggerUser) {
-		Activity activity = getBaseActivity(triggerUser, section.getInitiative()); 
+		Activity activity = getBaseActivity(triggerUser, section); 
 		
 		activity.setType(ActivityType.MODEL_SECTION_DELETED);
 		activity.setModelSection(section);
@@ -781,8 +769,8 @@ public class ActivityService {
 			UUID contextOfContextElementId,
 			List<AppUser> mentionedUsers) {
 		
-		Initiative initiative = initiativeRepository.findById(messageService.getInitiativeIdOfMessageThread(message.getThread()));
-		Activity activity = getBaseActivity(triggerUser, initiative); // #### how should i get activity from now, section UUID
+		ModelSection section = modelSectionRepository.findById(messageService.getInitiativeIdOfMessageThread(message.getThread()));
+		Activity activity = getBaseActivity(triggerUser, section); // #### how should i get activity from now, section UUID
 		
 		activity.setType(ActivityType.MESSAGE_POSTED);
 		activity.setMessage(message);
@@ -967,15 +955,12 @@ public class ActivityService {
 		}
 		// #### now no initiative id so should i remove this whole method? or another way to get applicable subscriber?
 		/* get applicable initiative */
-		UUID initiativeId = null;
+		UUID sectionId = null;
 		switch (elementType) {
 			case SECTION:
-				initiativeId = modelSectionRepository.findById(elementId).getInitiative().getId();
+				sectionId = modelSectionRepository.findById(elementId).getId();
 				break;
-				
-			case INITIATIVE:
-				initiativeId = elementId;
-				break;
+			
 				
 			default:
 				break;

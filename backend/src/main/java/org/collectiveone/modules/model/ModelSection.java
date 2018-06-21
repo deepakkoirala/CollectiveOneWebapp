@@ -33,8 +33,7 @@ public class ModelSection {
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 	
-	@ManyToOne
-	private Initiative initiative;
+	
 	
 	private Boolean isTopModelSection;
 	
@@ -67,6 +66,9 @@ public class ModelSection {
 	@OneToOne
 	private MessageThread messageThread;
 	
+	//##### what us here relationship
+	ModelSection rootSection;
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -94,8 +96,7 @@ public class ModelSection {
 		sectionDto.setId(id.toString());
 		sectionDto.setTitle(title);
 		sectionDto.setDescription(description);
-		sectionDto.setIsTopModelSection(isTopModelSection);
-		if (initiative != null) sectionDto.setInitiativeId(initiative.getId().toString());
+		sectionDto.setIsTopModelSection(isTopModelSection);		if (initiative != null) sectionDto.setInitiativeId(initiative.getId().toString());
 		
 		return sectionDto; 
 	}
@@ -103,7 +104,6 @@ public class ModelSection {
 	public ModelSectionDto toDto() {
 		ModelSectionDto sectionDto = toDtoLight();
 		
-		if (initiative != null) sectionDto.setInitiativeId(initiative.getId().toString());
 		
 		sectionDto.setnSubsections(subsections.size());
 		
@@ -118,12 +118,12 @@ public class ModelSection {
 		this.id = id;
 	}
 
-	public Initiative getInitiative() {
-		return initiative;
+	public ModelSection getRootSection() {
+		return rootSection;
 	}
 
-	public void setInitiative(Initiative initiative) {
-		this.initiative = initiative;
+	public void setInitiative(ModelSection rootSection) {
+		this.rootSection = rootSection;
 	}
 	
 	public Boolean getIsTopModelSection() {

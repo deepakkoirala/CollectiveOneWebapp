@@ -57,7 +57,7 @@ public class AssignationController extends BaseController {
 		
 		UUID initiativeId = UUID.fromString(initiativeIdStr);
 		
-		// #### delete or change to new version of canAccess?
+		// ##### can you help me to find initiativeService alternative
 		if (!initiativeService.canAccess(initiativeId, getLoggedUserId())) {
 			return new GetResult<List<AssignationDto>>("error", "access denied", null);
 		}
@@ -95,8 +95,8 @@ public class AssignationController extends BaseController {
 		UUID assignationId = UUID.fromString(assignationIdStr); 
 		UUID initiativeId = assignationService.findInitiativeId(assignationId);
 		
-		// #### delete or change to new version of canAccess?
-		if (!initiativeService.canAccess(initiativeId, getLoggedUserId())) {
+		// ##### what is initiativeService altrenative
+		if (!modelSectionService.canAccess(initiativeId, getLoggedUserId())) {
 			return new GetResult<AssignationDto>("error", "access denied", null);
 		}
 		
@@ -145,6 +145,7 @@ public class AssignationController extends BaseController {
 			return new PostResult("error", "endpoint enabled users only", null);
 		}
 		
+		// ##### i am confused here, getInitiativeIdOf was removed but hrere can you help writing
 		DecisionVerdict canRevert = governanceService.canRevertAssignation(assignationService.getInitiativeIdOf(UUID.fromString(assignationId)), getLoggedUser().getC1Id());
 		
 		if (canRevert == DecisionVerdict.DENIED) {
@@ -181,6 +182,7 @@ public class AssignationController extends BaseController {
 			return new PostResult("error", "endpoint enabled users only", null);
 		}
 		
+		//##### here to 
 		DecisionVerdict canDelete = governanceService.canDeleteAssignation(assignationService.getInitiativeIdOf(UUID.fromString(assignationId)), getLoggedUser().getC1Id());
 		
 		if (canDelete == DecisionVerdict.DENIED) {
