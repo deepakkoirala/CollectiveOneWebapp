@@ -17,7 +17,6 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 import org.collectiveone.modules.conversations.MessageThread;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.model.dto.ModelSectionDto;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -96,7 +95,7 @@ public class ModelSection {
 		sectionDto.setId(id.toString());
 		sectionDto.setTitle(title);
 		sectionDto.setDescription(description);
-		sectionDto.setIsTopModelSection(isTopModelSection);		if (initiative != null) sectionDto.setInitiativeId(initiative.getId().toString());
+		sectionDto.setIsTopModelSection(isTopModelSection);		
 		
 		return sectionDto; 
 	}
@@ -122,7 +121,7 @@ public class ModelSection {
 		return rootSection;
 	}
 
-	public void setInitiative(ModelSection rootSection) {
+	public void setRootSection(ModelSection rootSection) {
 		this.rootSection = rootSection;
 	}
 	

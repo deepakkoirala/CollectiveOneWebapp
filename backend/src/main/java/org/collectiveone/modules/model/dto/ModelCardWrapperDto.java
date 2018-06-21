@@ -13,6 +13,13 @@ public class ModelCardWrapperDto {
 	private AppUserDto creator;
 	private Long creationDate; 
 	private String initiativeId;
+	private String rootSectionId;
+	public String getRootSectionId() {
+		return rootSectionId;
+	}
+	public void setRootSectionId(String rootSectionId) {
+		this.rootSectionId = rootSectionId;
+	}
 	private Integer nLikes;
 	private Boolean userLiked;
 	private Long lastEdited;

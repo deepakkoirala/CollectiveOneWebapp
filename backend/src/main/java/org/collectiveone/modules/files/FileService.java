@@ -12,6 +12,7 @@ import org.collectiveone.common.dto.PostResult;
 import org.collectiveone.config.aws.AmazonS3Template;
 import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.initiatives.repositories.InitiativeRepositoryIf;
+import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.model.ModelService;
 import org.collectiveone.modules.users.AppUserProfile;
 import org.collectiveone.modules.users.AppUserProfileRepositoryIf;
@@ -209,8 +210,8 @@ public class FileService {
 	}
 	
 	@Transactional
-	public Initiative getFileInitiative(UUID fileId) {
-		return fileStoredRepository.findById(fileId).getInitiative();
+	public ModelSection getFileModelSection(UUID fileId) {
+		return fileStoredRepository.findById(fileId).getModelSection();
 	}
 	
 	@Transactional

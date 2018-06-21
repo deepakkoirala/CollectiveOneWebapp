@@ -18,7 +18,6 @@ import javax.persistence.Table;
 
 import org.collectiveone.modules.conversations.MessageThread;
 import org.collectiveone.modules.governance.CardLike;
-import org.collectiveone.modules.initiatives.Initiative;
 import org.collectiveone.modules.model.dto.ModelCardWrapperDto;
 import org.collectiveone.modules.users.AppUser;
 import org.hibernate.annotations.GenericGenerator;

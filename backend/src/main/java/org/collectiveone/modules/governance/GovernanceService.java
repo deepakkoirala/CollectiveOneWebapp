@@ -69,6 +69,7 @@ public class GovernanceService {
 		if (isRolesAndAdmin(initiativeId, userId) == DecisionVerdict.APPROVED) {
 			return DecisionVerdict.APPROVED;
 		} else {
+			// ##### please help here too
 			Initiative parent = initiativeRepository.findOfInitiativesWithRelationship(initiativeId, InitiativeRelationshipType.IS_ATTACHED_SUB);
 			return isRolesAndAdmin(parent.getId(), userId);
 		}

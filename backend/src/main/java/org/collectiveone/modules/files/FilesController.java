@@ -8,6 +8,7 @@ import org.collectiveone.common.dto.GetResult;
 import org.collectiveone.common.dto.PostResult;
 import org.collectiveone.modules.governance.DecisionVerdict;
 import org.collectiveone.modules.governance.GovernanceService;
+import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.model.ModelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,8 +67,8 @@ public class FilesController extends BaseController {
 		}
     	
 		UUID cardWrapperId = UUID.fromString(cardWrapperIdStr);
-		// #### delete or change to new version of canEditModel based on root section id?
-    	Initiative initiative = modelService.getCardWrapperInitiative(cardWrapperId);
+		// ##### delete or change to new version of canEditModel based on root section id?
+    	ModelSection section = modelService.getCardWrapperInitiative(cardWrapperId);
     	
     	if (governanceService.canEditModel(initiative.getId(), getLoggedUserId()) == DecisionVerdict.DENIED) {
     		return new PostResult("error", "not authorized", "");
@@ -103,11 +104,11 @@ public class FilesController extends BaseController {
     	
 		UUID fileId = UUID.fromString(fileIdStr);
 		
-		// #### get root section here?
+		// ##### get root section here? should i create 
     	Initiative initiative = fileService.getFileInitiative(fileId);
     	
     	if (initiative != null) {
-			// #### how canAccess will be without initiative id?
+			// ##### how canAccess will be without initiative id?
     		if (!initiativeService.canAccess(initiative.getId(), getLoggedUserId())) {
     			return new GetResult<FileStoredDto>("error", "access denied", null);
     		}

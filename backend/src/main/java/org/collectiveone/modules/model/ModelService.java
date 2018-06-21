@@ -45,8 +45,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class ModelService {
 	
+	//##### what is InitiativeService equvalent
 	@Autowired 
-	private InitiativeService initiativeService;
+	private InitiativeService initiativeService; 
 	
 	@Autowired
 	private ActivityService activityService;
@@ -99,8 +100,8 @@ public class ModelService {
 	}
 	
 	@Transactional
-	public Initiative getSectionInitiative (UUID sectionId) {
-		return modelSectionRepository.findById(sectionId).getInitiative();
+	public ModelSection getSectionInitiative (UUID sectionId) {
+		return modelSectionRepository.findById(sectionId);
 	}
 	
 	@Transactional
@@ -113,7 +114,7 @@ public class ModelService {
 		if (parent == null) return new PostResult("error", "parent section not found", "");
 		
 		parent.getSubsections().add(section);
-		section.setInitiative(parent.getInitiative());
+		section.setRootSection(parent);
 		
 		if (register) activityService.modelSectionCreatedOnSection(section, parent, appUserRepository.findByC1Id(creatorId));
 		
@@ -157,7 +158,7 @@ public class ModelService {
 	
 	@Transactional
 	public GetResult<Page<ModelSectionDto>> searchSection(String query, PageRequest page, UUID initiativeId, UUID requestByUserId) {
-		
+		// ##### initiativeService should be sectionService or equvalent?
 		List<UUID> initiativeEcosystemIds = initiativeService.findAllInitiativeEcosystemIds(initiativeId);
 		Page<ModelSection> enititiesPage = modelSectionRepository.searchBy("%"+query.toLowerCase()+"%", initiativeEcosystemIds, page);
 		
@@ -235,7 +236,7 @@ public class ModelService {
 		}
 		
 		fromSection = modelSectionRepository.save(fromSection);
-		subSection.setInitiative(toSection.getInitiative());
+		subSection.setRootSection(toSection);
 				
 		activityService.modelSectionMovedFromSectionToSection(subSection, fromSection, toSection, appUserRepository.findByC1Id(creatorId));
 		
@@ -388,7 +389,7 @@ public class ModelService {
 			cardWrappersHolder.getCardsWrappersPrivate().add(cardWrapperDto);
 		}
 		
-		/* if request user is in ecosystem add shared cards too */
+		/* ##### what is initiative service equvalent? if request user is in ecosystem add shared cards too */
 		if(initiativeService.isMemberOfEcosystem(section.getInitiative().getId(), requestByUserId)) {
 			
 			List<ModelCardWrapperAddition> modelCardWrappersShared = 
@@ -447,9 +448,9 @@ public class ModelService {
 		
 		if (cardWrapperAddition.getSection() != null) {
 			/* set initiative based on section */
-			cardWrapperDto.setInitiativeId(cardWrapperAddition.getSection().getInitiative().getId().toString());
+			cardWrapperDto.setRootSectionId(cardWrapperAddition.getSection().getId().toString());
 		} else {
-			cardWrapperDto.setInitiativeId(cardWrapperAddition.getCardWrapper().getInitiative().getId().toString());
+			cardWrapperDto.setRootSectionId(cardWrapperAddition.getCardWrapper().getRootSection().getId().toString());
 		}
 		
 		/* get number of likes */

@@ -17,6 +17,7 @@ import org.collectiveone.modules.activity.enums.ActivityType;
 import org.collectiveone.modules.activity.enums.NotificationState;
 import org.collectiveone.modules.activity.repositories.NotificationRepositoryIf;
 import org.collectiveone.modules.activity.repositories.WantToContributeRepositoryIf;
+import org.collectiveone.modules.model.ModelSection;
 import org.collectiveone.modules.users.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -186,7 +187,7 @@ public class EmailService {
 	}
 	
 	// ##### this methods seems initiative related right? delete whole
-	private String sendSegmentedPerUserAndInitiativeNotifications(List<Notification> notifications, AppUser receiver, Initiative initiative) throws IOException {
+	private String sendSegmentedPerUserAndInitiativeNotifications(List<Notification> notifications, AppUser receiver, ModelSection rootSection) throws IOException {
 		if(env.getProperty("collectiveone.webapp.send-email-enabled").equalsIgnoreCase("true")) {
 			if(notifications.size() > 0 && receiver.getEmailNotificationsEnabled()) {
 				Request request = new Request();
@@ -204,8 +205,8 @@ public class EmailService {
 				toEmail.setEmail(receiver.getEmail());
 				
 				personalization.addTo(toEmail);
-				personalization.addSubstitution("$INITIATIVE_NAME$", initiative.getMeta().getName());
-				personalization.addSubstitution("$INITIATIVE_ANCHOR$", getInitiativeAnchor(initiative));
+				personalization.addSubstitution("$INITIATIVE_NAME$", rootSection.getTitle());
+				personalization.addSubstitution("$INITIATIVE_ANCHOR$", getModelSectionAnchor(rootSection));
 				
 				personalization.addSubstitution("$UNSUSCRIBE_FROM_ALL_HREF$", getUnsuscribeFromAllHref());
 				
@@ -444,7 +445,7 @@ public class EmailService {
 		String toEmailString = notification.getSubscriber().getUser().getEmail();
 		String triggeredByUsername = notification.getActivity().getTriggerUser().getProfile().getNickname();
 		String triggerUserPictureUrl = notification.getActivity().getTriggerUser().getProfile().getPictureUrl();
-		Initiative initiative = notification.getActivity().getInitiative();
+		ModelSection modelSection = notification.getActivity().getModelSection();
 		
 		Personalization personalization = new Personalization();
 		
@@ -452,28 +453,28 @@ public class EmailService {
 		toEmail.setEmail(toEmailString);
 		
 		personalization.addTo(toEmail);
-		personalization.addSubstitution("$INITIATIVE_NAME$", initiative.getMeta().getName());
+		personalization.addSubstitution("$INITIATIVE_NAME$", modelSection.getTitle()); // ##### INITIATIVE_NAME
 		personalization.addSubstitution("$TRIGGER_USER_NICKNAME$", triggeredByUsername);
 		personalization.addSubstitution("$TRIGGER_USER_PICTURE$", triggerUserPictureUrl);
-		personalization.addSubstitution("$INITIATIVE_ANCHOR$", getInitiativeAnchor(initiative));
+		personalization.addSubstitution("$INITIATIVE_ANCHOR$", getRootSectionAnchor(modelSection)); // ##### here also?
 		personalization.addSubstitution("$INITIATIVE_PICTURE$", "http://guillaumeladvie.com/wp-content/uploads/2014/04/ouishare.jpg");
 		
-		personalization.addSubstitution("$UNSUSCRIBE_FROM_INITIATIVE_HREF$", getUnsuscribeFromInitiativeHref(initiative));
+		personalization.addSubstitution("$UNSUSCRIBE_FROM_INITIATIVE_HREF$", getUnsuscribeFromRootSectionHref(modelSection));
 		personalization.addSubstitution("$UNSUSCRIBE_FROM_ALL_HREF$", getUnsuscribeFromAllHref());
 		
 		return personalization;
 	}
 	
 	// #### should i delete this too as it is fully initiative related
-	private String getInitiativeAnchor(Initiative initiative) {
+	private String getRootSectionAnchor(ModelSection section) {
 		return "<a href=" + env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/" + 
-				initiative.getId().toString() + "/overview>" + initiative.getMeta().getName() + "</a>";
+				section.getId().toString() + "/overview>" + section.getTitle() + "</a>";
 	}
 	
 	// #### should i delete this too as it is fully initiative related
-	private String getUnsuscribeFromInitiativeHref(Initiative initiative) {
+	private String getUnsuscribeFromRootSectionHref(ModelSection modelSection) {
 		return env.getProperty("collectiveone.webapp.baseurl") +"/#/app/inits/unsubscribe?fromInitiativeId=" + 
-				initiative.getId().toString() + "&fromInitiativeName=" + initiative.getMeta().getName();
+				modelSection.getId().toString() + "&fromInitiativeName=" + modelSection.getTitle();
 	}
 	
 	private String getUnsuscribeFromAllHref() {

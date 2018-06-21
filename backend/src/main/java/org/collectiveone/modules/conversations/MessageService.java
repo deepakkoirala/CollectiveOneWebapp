@@ -46,10 +46,10 @@ public class MessageService {
 		
 		switch (contextType) {
 			case MODEL_CARD:
-				return modelCardWrapperRepository.findById(elementId).getInitiative().getId();
+				return modelCardWrapperRepository.findById(elementId).getRootSection().getId();
 			
 			case MODEL_SECTION:
-				return modelSectionRepository.findById(elementId).getInitiative().getId();
+				return modelSectionRepository.findById(elementId).getRootSection().getId();
 		
 				
 		}
@@ -69,10 +69,10 @@ public class MessageService {
 		switch (thread.getContextType()) {
 		
 			case MODEL_CARD:
-				return thread.getModelCardWrapper().getInitiative().getId();
+				return thread.getModelCardWrapper().getRootSection().getId();
 			
 			case MODEL_SECTION:
-				return thread.getModelSection().getInitiative().getId();
+				return thread.getModelSection().getRootSection().getId();
 			
 				
 		}

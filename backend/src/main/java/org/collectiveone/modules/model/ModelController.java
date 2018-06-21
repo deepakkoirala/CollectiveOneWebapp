@@ -39,6 +39,8 @@ public class ModelController extends BaseController {
 	@Autowired
 	private InitiativeService initiativeService;
 	
+	//##### I want to know equvalent of initiativeService
+	
 	
 	@RequestMapping(path = "/initiative/{initiativeId}/model", method = RequestMethod.GET) 
 	public GetResult<ModelSectionDto> getModel(
